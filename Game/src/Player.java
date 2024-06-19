@@ -13,13 +13,12 @@ public class Player extends Nave {
     }
 
     public void draw(Graphics g) {
-        g.drawImage(img.getImage(), super.getX(), super.getY(),
-                width, height, null);
+        if(super.getVida() > 0)
+            g.drawImage(img.getImage(), super.getX(), super.getY(), width, height, null);
     }
 
     public boolean receberDano(int dano, int x, int y) {
-        if(y <= (super.getY() + this.height) && (x >= super.getX() && x <= (super.getX() + width))) {
-            System.out.println("Acertou");
+        if((y <= (super.getY() + height) && y >= super.getY()) && (x >= super.getX() && x <= (super.getX() + width))) {
             super.setVida(super.getVida() - dano);
             if(super.getVida() <= 0)
                 return true;

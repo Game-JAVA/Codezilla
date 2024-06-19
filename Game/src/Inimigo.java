@@ -28,7 +28,7 @@ public class Inimigo extends Nave {
     }
 
     public boolean receberDano(int dano, int x, int y) {
-        if(y <= (super.getY() + this.height) && (x >= super.getX() && x <= (super.getX() + width))) {
+        if(y <= (super.getY() + height) && (x >= super.getX() && x <= (super.getX() + width))) {
             System.out.println("Acertou");
             super.setVida(super.getVida() - dano);
             if(super.getVida() <= 0)
@@ -37,8 +37,7 @@ public class Inimigo extends Nave {
         return false;
     }
 
-    public void moviment() {
-        if (angle <= 2 * Math.PI) {
+    public void moviment1() {
             angle += 0.015; // Incrementa o ângulo
 
             int newX = (int) (centerX + raio * Math.cos(angle));
@@ -47,7 +46,7 @@ public class Inimigo extends Nave {
             // Atualiza a posição do objeto
             super.setX(newX);
             super.setY(newY);
-        }
+
     }
 
     public int getWidth() {

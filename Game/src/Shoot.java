@@ -2,17 +2,20 @@ import java.awt.Graphics;
 import javax.swing.*;
 
 public class Shoot {
-    private int width, height, x, y, speed, dano;
+    private int width, height, x, y, speed, dano, cateto2, cateto1, screenHeight, screenWidth;
     private ImageIcon img;
+    private boolean aux = false;
 
-    public Shoot(int x, int y, int dano, String url, double scale) {
+    public Shoot(int x, int y, int dano, int speed, String url, int screenHeight, int screenWidth, double scale) {
         this.x = x;
         this.y = y;
         this.dano = dano;
-        speed = 6;
+        this.speed = speed;
         this.img = new ImageIcon(this.getClass().getResource(url));
         this.width = (int) (img.getIconWidth() * scale);
         this.height = (int) (img.getIconHeight() * scale);
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
     }
 
     public void draw(Graphics g) {
@@ -20,18 +23,20 @@ public class Shoot {
                 width, height, null);
     }
 
-    public boolean move(int screenHeight) {
+    public boolean move() {
         y -= speed;
 
-        if (y + height >= screenHeight)
+        if (y + height <= 0)
             return true;
         return false;
     }
 
-    public void move2(int destX, int destY) {
+    public boolean move2(int destX, int destY) {
         // Calcula a diferença entre o destino e o tiro (cateto)
-        int cateto1 = destX - x;
-        int cateto2 = destY - y;
+        if(aux == false) {
+            cateto1 = destX - x;
+            cateto2 = destY - y;
+        }
 
         // Verifica se o objeto já está próximo o suficiente do destino
         if (Math.abs(cateto1) <= speed && Math.abs(cateto2) <= speed) {
@@ -51,7 +56,11 @@ public class Shoot {
 
             x += (int) moveX;
             y += (int) moveY;
+            aux = true;
         }
+        if ((y >= screenHeight || (y + height) <= 0) || (x >= screenWidth || (x + width) <= 0))
+            return true;
+        return false;
     }
 
     public int getWidth() {
