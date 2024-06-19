@@ -1,15 +1,14 @@
 import java.awt.*;
 
 public abstract class Nave {
-    private int x, y, speedX, speedY, vida, dano;
+    private int x, y, speedX, speedY, vida;
 
-    public Nave(int x, int y, int speedX, int speedY, int vida, int dano) {
+    public Nave(int x, int y, int speedX, int speedY, int vida) {
         this.x = x;
         this.y = y;
         this.speedX = speedX;
         this.speedY = speedY;
         this.vida = vida;
-        this.dano = dano;
     }
 
     public void moveX(int inc) {
@@ -20,6 +19,7 @@ public abstract class Nave {
         y+=speedY*inc;
     }
 
+    // Setter
     public void setX(int x) {
         this.x = x;
     }
@@ -35,6 +35,8 @@ public abstract class Nave {
     public void setSpeedY(int speedY) {
         this.speedY = speedY;
     }
+
+    public void setVida(int vida) { this.vida = vida; }
 
     // Getter
     public int getX() {
@@ -52,6 +54,8 @@ public abstract class Nave {
     public int getSpeedY() {
         return speedY;
     }
+
+    public int getVida() { return vida; }
 
     // toString
     @Override

@@ -8,8 +8,8 @@ import java.time.*;
 public class Run extends javax.swing.JFrame implements Runnable{
 
     // tamanho da tela
-    private int height = 700;
-    private int width = 1400;
+    private int height;
+    private int width;
 
     // teclas
     /*
@@ -20,6 +20,10 @@ public class Run extends javax.swing.JFrame implements Runnable{
 
     // Construtor
     public Run() {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        width = screenSize.width;
+        height = screenSize.height;
+
         // Chama o metodo que realiza todas as configurações iniciais necessárias
         initComponents();
 
@@ -128,15 +132,23 @@ public class Run extends javax.swing.JFrame implements Runnable{
             }
         });
     }
+
     @Override
     public void run() {
         Graphics g = getBufferStrategy().getDrawGraphics();
 
-        ArrayList<Shoot> shoots = new ArrayList<>();;
+        // Objeto da imagem de fundo
+        ImageIcon img = new ImageIcon(this.getClass().getResource("/images/fundo.png"));
 
-        Inimigo n = new Inimigo(10, 10, 1,1, 10,10, "/images/pixil-gif-drawing-5--unscreen.gif");
-        n.scale(0.2);
+        // ArrayList dos inimigos e tiros, pois irá ter vários
+        ArrayList<Shoot> shootsPlayer = new ArrayList<>();
+        ArrayList<Shoot> shootsInimigo = new ArrayList<>();
+        ArrayList<Inimigo> inimigos = new ArrayList<>();
 
+        Inimigo n = new Inimigo(10, 10, 5,5, 10, 0.2, 20, "/images/nave_player.gif");
+        inimigos.add(new Inimigo(500, 500, 1,1, 10, 0.15, 200,"/images/nave_small.png"));
+
+        // Millis (função de tempo) para fazer o delay dos tiros
         Clock clock = Clock.systemDefaultZone();
         long milis = clock.millis();
         long milis2 = milis;
@@ -145,12 +157,21 @@ public class Run extends javax.swing.JFrame implements Runnable{
             // Atualiza g
             g = getBufferStrategy().getDrawGraphics();
 
-            //limpa tela
+            // Limpa tela
             g.clearRect(0, 0, getWidth(), getHeight());
 
-            // Implemente sua animação aqui.
-            n.draw(g);
+            // Animação da tela de fundo
+            g.drawImage(img.getImage(), 0, 0, width, height, null);
 
+            // Animação das naves
+            n.draw(g);
+            for (int i = 0; i < inimigos.size(); i++) {
+                Inimigo n2 = inimigos.get(i);
+                n2.draw(g);
+                n2.moviment();
+            }
+
+            // Controles
             if(right)
                 n.moveX(1);
             if(left)
@@ -160,20 +181,52 @@ public class Run extends javax.swing.JFrame implements Runnable{
             if(up)
                 n.moveY(-1);
 
+            // Tiro do player a cada 500ms
             milis = clock.millis();
 
-            if((milis - milis2) > 700 && shoot) {
-                shoots.add(new Shoot(n.getX(), n.getY(), "/images/tiro.gif", 0.4));
+            if((milis - milis2) > 500 && shoot) {
+                shootsPlayer.add(new Shoot(n.getX(), n.getY(), 10, "/images/tiro.gif", 0.4));
                 milis2 = milis;
             }
 
-            for (int i = 0; i < shoots.size(); i++) {
-                Shoot s = shoots.get(i);
+            // Tiros dos inimigos a cada 1s
+            milis = clock.millis();
+
+            for (int i = 0; i < inimigos.size(); i++) {
+                Inimigo n2 = inimigos.get(i);
+                if((n2.getMillis() - n2.getMillis2()) > 1000) {
+                    shootsInimigo.add(new Shoot(n2.getX(), n2.getY(), 10, "/images/tiro.gif", 0.4));
+                    n2.setMillis();
+                }
+            }
+
+            // Animação dos tiros
+            for (int i = 0; i < shootsPlayer.size(); i++) {
+                // Varro o array de tiros do player para desenhar eles
+                Shoot s = shootsPlayer.get(i);
                 s.draw(g);
+                // Movo eles para cima e, caso passem da tela, excluo do array
                 if (s.move(height)) {
-                    shoots.remove(i);
+                    shootsPlayer.remove(i);
                     i--;
                 }
+                // Varro o array de inimigos para verificar se o tiro atingiu algum
+                for (int j = 0; j < inimigos.size(); j++) {
+                    Inimigo n2 = inimigos.get(j);
+                    // Caso atinja, substraio da vida do inimigo o dano do tiro e excluo o tiro do array
+                    if(n2.receberDano(s.getDano(), s.getX(), s.getY())) {
+                        inimigos.remove(j);
+                        shootsPlayer.remove(i);
+                        i--;
+                        j--;
+                    }
+                }
+            }
+
+            for (int i = 0; i < shootsInimigo.size(); i++) {
+                Shoot s = shootsInimigo.get(i);
+                s.draw(g);
+                s.move2(n.getX(), n.getY());
             }
 
             // Exibe a tela
