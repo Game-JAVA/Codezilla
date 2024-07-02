@@ -13,21 +13,33 @@ public class Player extends Nave {
     }
 
     public void draw(Graphics g) {
-        if(super.getVida() > 0)
-            g.drawImage(img.getImage(), super.getX(), super.getY(), width, height, null);
+        if(!isDead())
+            g.drawImage(img.getImage(), getX(), getY(), width, height, null);
     }
 
     public boolean receberDano(int dano, int x, int y) {
-        if((y <= (super.getY() + height) && y >= super.getY()) && (x >= super.getX() && x <= (super.getX() + width))) {
-            super.setVida(super.getVida() - dano);
-            if(super.getVida() <= 0)
+        if((y <= (getY() + height) && y >= getY()) && (x >= getX() && x <= (getX() + width))) {
+            setVida(getVida() - dano);
+            if(getVida() <= 0)
                 return true;
         }
         return false;
     }
 
-    public ImageIcon getImg() {
-        return img;
+    @Override
+    public void moveX(int inc) {
+        if(!isDead())
+            setX(getX() + getSpeedX()*inc);
+    }
+
+    @Override
+    public void moveY(int inc) {
+        if(!isDead())
+            setY(getY() + getSpeedY()*inc);
+    }
+
+    public void animation() {
+        setY(getY() - 1);
     }
 
     public void setImg(ImageIcon img) {
@@ -40,5 +52,12 @@ public class Player extends Nave {
 
     public int getHeight() {
         return height;
+    }
+
+    public boolean isDead() {
+        if(getVida() > 0)
+            return false;
+        else
+            return true;
     }
 }

@@ -57,16 +57,5 @@ public abstract class Nave {
 
     public int getVida() { return vida; }
 
-    // toString
-    @Override
-    public String toString() {
-        return "Shape{" +
-                ", x=" + x +
-                ", y=" + y +
-                ", speedX=" + speedX +
-                ", speedY=" + speedY +
-                '}';
-    }
-
     public abstract void draw(Graphics g);
 }
