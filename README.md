@@ -35,3 +35,4 @@
 - S: Baixo;
 - D: Direita;
 - Enter: Atira;
+- Esc: Pausar.
