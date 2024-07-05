@@ -3,7 +3,7 @@
 ***PROPOSTA***
 
 - Jogo do genêro shooter 2D que se passa no espaço;
-- O jogo será de uma fase extensa com aproximadamente 4 minutos de duração;
+- O jogo irá progredir conforme o 'score' do player vai aumentando;
 - Se o jogador sobreviver ao percurso, ele chega no boss;
 - Os inimigos surgem de diferentes pontos da parte superior e lateral da tela e tentam abater a nave do jogador;
 - O jogador é abatido caso algum dos projéteis inimigos atinja o player ou caso o próprio colida em alguma nave inimiga;
