@@ -3,31 +3,38 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.time.*;
+import java.util.Random;
 
 @SuppressWarnings("serial")
 public class Run extends javax.swing.JFrame implements Runnable{
 
     // tamanho da tela
-    private int height;
-    private int width;
+    private int height, width;
+
+    // Variável para controlar o estado de pausa
+    private boolean isPaused = false;
 
     // teclas
-    /*
-     * Funcionamento: quando a tecla é pressionada sua respectiva variável fica
-     * com valor True. Quando solta a variável fica com valor False.
-     */
-    private boolean left, right, up, down, shoot, aux = false;
+    /* Funcionamento: quando a tecla é pressionada sua respectiva variável fica
+    com valor True. Quando solta a variável fica com valor False. */
+    private boolean left, right, up, down, shoot, horde = false, mediumDeath = true, animationBoss = true, animationCap = true, bigDeath = true, shootPlusSpawn = false, exit = false;
     // Millis (função de tempo) para fazer o delay dos tiros
     Clock clock = Clock.systemDefaultZone();
-    long milisPlayer = clock.millis(), milisPlayer2 = milisPlayer;
-    long millisInimigo = clock.millis(), millisInimigo2;
-    Byte i = 0;
+    long millisSmall = clock.millis(), millisSmall2;
+    long millisMedium = clock.millis(), millisMedium2;
+    long millisBig = clock.millis(), millisBig2;
+    long millisHorda = clock.millis(), millisHorda2;
+    long millisHorda3 = clock.millis(), millisHorda4;
+    long millisDeath = clock.millis(), millisDeath2;
+    byte i = 0, randHorde, randUp;
+    short inimigoSpawn = 1000, subInimigoSpawn = 0, subTimeTiroInimigo = 0, score = 0, auxScore;
 
     // Construtor
     public Run() {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        width = screenSize.width;
-        height = screenSize.height;
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        width = gd.getDisplayMode().getWidth();
+        height = gd.getDisplayMode().getHeight();
+
 
         // Chama o metodo que realiza todas as configurações iniciais necessárias
         initComponents();
@@ -74,24 +81,34 @@ public class Run extends javax.swing.JFrame implements Runnable{
     }// </editor-fold>//GEN-END:initComponents
 
     // Método que verifica se as teclas foram pressionadas
-    private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
+    private void formKeyPressed(java.awt.event.KeyEvent evt) {
         if (evt.getKeyCode() == KeyEvent.VK_A) {
             left = true;
-        }
-        else if (evt.getKeyCode() == KeyEvent.VK_D) {
+        } else if (evt.getKeyCode() == KeyEvent.VK_D) {
             right = true;
-        }
-        else if (evt.getKeyCode() == KeyEvent.VK_W)
-        {
+        } else if (evt.getKeyCode() == KeyEvent.VK_W) {
             up = true;
-        }
-        else if (evt.getKeyCode() == KeyEvent.VK_S) {
+        } else if (evt.getKeyCode() == KeyEvent.VK_S) {
             down = true;
-        }
-        else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+        } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
             shoot = true;
+        } else if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            isPaused = !isPaused; // Alterna o estado de pausa --------------------------------------------
+            if (isPaused) {
+                showPauseScreen();
+            }
         }
-    }//GEN-LAST:event_formKeyPressed
+    }
+    // Método para exibir a tela de pausa -------------------------------------------------------------------
+    private void showPauseScreen() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new TelaPause().setVisible(true);
+            }
+        });
+    }
+//-----------------------------------------------------------------------------------------------------
+
 
     // Método que verifica se as teclas foram soltas
     private void formKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyReleased
@@ -143,27 +160,38 @@ public class Run extends javax.swing.JFrame implements Runnable{
         Graphics g = getBufferStrategy().getDrawGraphics();
 
         // Objeto da imagem de fundo
-        ImageIcon img = new ImageIcon(this.getClass().getResource("/images/fundo.png"));
+        ImageIcon img = new ImageIcon(this.getClass().getResource("/images/background.gif"));
+        // Objetos das imagens do score
+        ImageIcon imgDec, imgUni, imgScore;
+        //ImageIcon boss = new ImageIcon(this.getClass().getResource("/images/mothership.png"));
 
-        // Objeto do som de fundo
-        Sound shootSound = new Sound("/sounds/tiro.wav", false);
+        // Objeto da imagem de explosão do player
+        ImageIcon imgExplosion = new ImageIcon(this.getClass().getResource("/images/explosion2.gif"));
 
-        // ArrayList dos inimigos e tiros, pois irá ter vários
+        // Objeto do som do loop do jogo
+        Sound loopSound = new Sound("/sounds/loop2.wav", true);
+
+        // ArrayList dos tiros do player
         ArrayList<Shoot> shootsPlayer = new ArrayList<>();
+        // ArrayList dos tiros dos inimigos
         ArrayList<Shoot> shootsInimigo = new ArrayList<>();
-        ArrayList<Inimigo> inimigos = new ArrayList<>();
+        // ArrayList inimigos
+        ArrayList<Nave> inimigos = new ArrayList<>();
+        // ArrayList das explosões
+        ArrayList<Explosion> explosões = new ArrayList<>();
+        // ArrayList dos power ups
+        ArrayList<PowerUp> powerUps = new ArrayList<>();
+        // ArrayList das capsulas do boss
+        ArrayList<Capsula> capsulas = new ArrayList<>();
 
-        Player n = new Player(10, 10, 6,6, 10, 0.2, "/images/nave_player.gif");
+        // Objeto do player
+        Player n = new Player(width/2, height, 12,9, 10, 0.18, width, height, "/images/nave_player.gif");
+        // Objeto do boss
+        Boss b = new Boss(2, 2, 10, 0.9, width, height, "/images/boss.png");
+        loopSound.play();
 
-        while(true) {
-
-            // Verifica se o jogador está morto
-            if (n.getVida() <= 0) {
-                new TelaGameOver();
-                dispose(); // Fecha a tela de jogo atual
-                break;
-            }
-
+        // Animação inicial
+        while(n.getY() >= 800) {
             // Atualiza g
             g = getBufferStrategy().getDrawGraphics();
 
@@ -171,42 +199,152 @@ public class Run extends javax.swing.JFrame implements Runnable{
             g.clearRect(0, 0, getWidth(), getHeight());
 
             // Animação da tela de fundo
-            g.drawImage(img.getImage(), 0, 0, width, height, null);
+            g.drawImage(img.getImage(), 0, 0, width + 50, height, null);
 
-            // Animação das naves
+            // Animação da nave player
             n.draw(g);
+            n.animation();
 
-            horda1(inimigos, g);
+            //g.drawImage(boss.getImage(), 0, -700, (int) (boss.getIconWidth() * 1.57), (int) (boss.getIconHeight() * 1.57), null);
 
-            // Controles
-            if(right)
-                n.moveX(1);
-            if(left)
-                n.moveX(-1);
-            if(down)
-                n.moveY(1);
-            if(up)
-                n.moveY(-1);
+            // Exibe a tela
+            getBufferStrategy().show();
 
-            // Tiro do player a cada 500ms
-            milisPlayer = clock.millis();
-
-            if((milisPlayer - milisPlayer2) > 500 && shoot) {
-                shootsPlayer.add(new Shoot(n.getX(), n.getY(), 10, 9, "/images/tiro.gif", height, width, 0.4));
-                shootSound.play();
-                milisPlayer2 = milisPlayer;
+            // Unidade de tempo da animação
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException ex) {
             }
+        }
 
-            // Tiros dos inimigos a cada 1s
-            for (int i = 0; i < inimigos.size(); i++) {
-                Inimigo n2 = inimigos.get(i);
-                if((n2.getMillis() - n2.getMillis2()) > 2000) {
-                    shootsInimigo.add(new Shoot(n2.getX(), n2.getY(), 10, 5, "/images/tiroInimigo.png", height, width, 0.08));
-                    n2.setMillis();
+        millisHorda = clock.millis();
+        millisHorda2 = millisHorda;
+        millisMedium = clock.millis();
+        millisMedium2 = millisMedium;
+
+        // Batalha inicial
+        while(score <= 0) {
+            // Atualiza g
+            g = getBufferStrategy().getDrawGraphics();
+
+            // Limpa tela
+            g.clearRect(0, 0, getWidth(), getHeight());
+
+            // Animação da tela de fundo
+            g.drawImage(img.getImage(), 0, 0, width + 50, height, null);
+
+            // Se o jogo estiver pausado, não executa a lógica do jogo
+            if (isPaused)
+                continue;
+
+            // Pontuação
+            int uni = score % 10;
+            int dec = score / 10;
+            imgDec = new ImageIcon(this.getClass().getResource("/images/score/" + (char) (dec + '0') + ".png"));
+            imgUni = new ImageIcon(this.getClass().getResource("/images/score/" + (char) (uni + '0') + ".png"));
+            imgScore = new ImageIcon(this.getClass().getResource("/images/score/score.png"));
+
+            // Animação da pontuação
+            g.drawImage(imgDec.getImage(), 20, 80, (int) (imgDec.getIconWidth() * 0.2), (int) (imgDec.getIconHeight() * 0.2), null);
+            g.drawImage(imgUni.getImage(), 50, 80, (int) (imgUni.getIconWidth() * 0.2), (int) (imgUni.getIconHeight() * 0.2), null);
+            g.drawImage(imgScore.getImage(), 32, 60, (int) (imgUni.getIconWidth() * 0.22), (int) (imgUni.getIconHeight() * 0.08), null);
+
+            // Morte do player
+            if (n.isDead()) {
+                millisDeath = clock.millis();
+                if ((millisDeath - millisDeath2) < 400)
+                    g.drawImage(imgExplosion.getImage(), n.getX(), n.getY(), (int) (imgExplosion.getIconWidth() * 0.5), (int) (imgExplosion.getIconHeight() * 0.5), null);
+                else if ((millisDeath - millisDeath2) > 2500) {
+                    loopSound.stop();
+                    new TelaGameOver();
+                    dispose(); // Fecha a tela de jogo atual
+                    break;
                 }
             }
 
-            // Animação dos tiros
+            // Dificuldade
+            if(score % 5 == 0 && score != 0) {
+                subTimeTiroInimigo = (short) (score * 5);
+                subInimigoSpawn = (short) (score * 8);
+            }
+
+            // Controles
+            if (right)
+                n.moveX(1);
+            if (left)
+                n.moveX(-1);
+            if (down)
+                n.moveY(1);
+            if (up)
+                n.moveY(-1);
+
+            // Instanciando
+            // Drop de power ups
+            if((score - 20) % 12 == 0 && (score - 20) >= 0 && score != auxScore) {
+                powerUps.add(new PowerUp(0, 0, width, height, 0.35, false, "images/shieldPower.gif"));
+                auxScore = score;
+            }
+
+            // Inimigos
+            inimigos(inimigos);
+
+            // Tiro do player
+            if (n.atirar(0, shoot)) {
+                shootsPlayer.add(new Shoot(n.getX(), n.getY(), 10, 10, "/images/tiro.gif", height, width, 0.4, (byte) 0, n.getWidth()));
+                shootsPlayer.add(new Shoot(n.getX(), n.getY(), 10, 10, "/images/tiro.gif", height, width, 0.4, (byte) 1, n.getWidth()));
+                if(n.getShootPlus()) {
+                    shootsPlayer.add(new Shoot(n.getX(), n.getY(), 5, 10, "/images/tiro.gif", height, width, 0.4, (byte) 2, n.getWidth()));
+                    shootsPlayer.add(new Shoot(n.getX(), n.getY(), 5, 10, "/images/tiro.gif", height, width, 0.4, (byte) 3, n.getWidth()));
+                }
+                n.setmillisShoot();
+            }
+
+            // Animação
+            // Animação da nave player
+            n.draw(g);
+
+            // Inimigos
+            for (int i = 0; i < inimigos.size(); i++) {
+                Nave inimigo = inimigos.get(i);
+                inimigo.draw(g);
+
+                // Movimento inimigos
+                if (inimigo.move()) {
+                    System.out.println("Inimigo de horda removida");
+                    inimigos.remove(i);
+                    i--;
+                    continue;
+                }
+
+                // Tiros dos inimigos
+                if (inimigo.atirar(subTimeTiroInimigo, true)) {
+                    if(inimigos.get(i) instanceof Verme)
+                        shootsInimigo.add(new Shoot(inimigo.getX(), inimigo.getY(), 10, 6, "/images/tiroHorda.png", height, width, 0.04));
+                    else if(inimigos.get(i) instanceof Small)
+                        shootsInimigo.add(new Shoot(inimigo.getX() + (inimigo.getWidth()/2) - 15, inimigo.getY() + inimigo.getHeight() - 20, 10, 7, "/images/tiroInimigo.png", height, width, 0.06));
+                    else if(inimigos.get(i) instanceof Medium)
+                        shootsInimigo.add(new Shoot(inimigo.getX() + (inimigo.getWidth()/2) - 20, inimigo.getY() + inimigo.getHeight(), 10, 5, "/images/tiroMedium.png", height, width, 0.07));
+                    else
+                        shootsInimigo.add(new Shoot(inimigo.getX() + (inimigo.getWidth()/2) - 20, inimigo.getY() + 135, 20, 5, "/images/tiroEnergy.png", height, width, 0.25));
+                    inimigo.setmillisShoot();
+                }
+
+                // Colisão com o player
+                if(!n.isDead())
+                    if ((inimigo.getY() <= (n.getY() + n.getHeight()) && inimigo.getY() >= n.getY()) && inimigo.getX() >= n.getX() && inimigo.getX() <= (n.getX() + n.getWidth())) {
+                        if (n.receberDano(10)) {
+                            millisDeath = clock.millis();
+                            millisDeath2 = millisDeath;
+                        } else
+                            n.setImg("/images/nave_player.gif", 0.18);
+                        if (inimigo.receberDano(10)) {
+                            inimigoDelete(inimigo, explosões);
+                            inimigos.remove(i);
+                            i--;
+                        }
+                    }
+            }
+
             // Tiros do Player
             for (int i = 0; i < shootsPlayer.size(); i++) {
                 // Varro o array de tiros do player para desenhar eles
@@ -214,20 +352,32 @@ public class Run extends javax.swing.JFrame implements Runnable{
                 s.draw(g);
                 // Movo eles para cima e, caso passem da tela, excluo do array
                 if (s.move()) {
-                    System.out.println("Tiro do player removido");
                     shootsPlayer.remove(i);
                     i--;
+                    continue;
                 }
                 // Varro o array de inimigos para verificar se o tiro atingiu algum
                 for (int j = 0; j < inimigos.size(); j++) {
-                    Inimigo n2 = inimigos.get(j);
+                    Nave inimigo = inimigos.get(j);
                     // Caso atinja, substraio da vida do inimigo o dano do tiro e excluo o tiro do array
-                    if(n2.receberDano(s.getDano(), s.getX(), s.getY())) {
-                        System.out.println("Inimigo destruido");
-                        inimigos.remove(j);
+                    if ((s.getY() <= (inimigo.getY() + inimigo.getHeight()) && s.getY() >= inimigo.getY()) && (s.getX() >= inimigo.getX() && s.getX() <= (inimigo.getX() + inimigo.getWidth()))) {
+                        if (inimigo.receberDano(s.getDano())) {
+                            //System.out.println("Inimigo destruído");
+                            inimigos.remove(j);
+                            j--;
+                            score++;
+
+                            inimigoDelete(inimigo, explosões);
+
+                            Random r = new Random();
+                            randUp = (byte) r.nextInt(10);
+                            if(score >= 35 && randUp == 1 && !n.getShootPlus() && !shootPlusSpawn) {
+                                powerUps.add(new PowerUp(inimigo.getX(), inimigo.getY(), width, height, 0.25, true, "images/tiroPower.gif"));
+                                shootPlusSpawn = true;
+                            }
+                        }
                         shootsPlayer.remove(i);
                         i--;
-                        j--;
                     }
                 }
             }
@@ -236,15 +386,57 @@ public class Run extends javax.swing.JFrame implements Runnable{
             for (int i = 0; i < shootsInimigo.size(); i++) {
                 Shoot s = shootsInimigo.get(i);
                 s.draw(g);
-                if(s.move2(n.getX(), n.getY())) {
-                    System.out.println("Tiro do inimigo removido");
+
+                // Movo eles e, caso passem da tela, excluo do array
+                if (s.move2(n.getX(), n.getY())) {
+                    //System.out.println("Tiro do inimigo removido");
                     shootsInimigo.remove(i);
-                    i--;
+                    i--; // Ajusta o índice após a remoção
+                    continue;
                 }
 
-                // Caso atinja, substraio da vida do player o dano do tiro e excluo o tiro do array
-                if(n.receberDano(s.getDano(), s.getX(), s.getY())) {
-                    shootsInimigo.remove(i);
+                // Caso atinja o player, subtrai da vida do player o dano do tiro e exclui o tiro do array
+                if(!n.isDead())
+                    if ((s.getY() <= (n.getY() + n.getHeight()) && s.getY() >= n.getY()) && (s.getX() >= n.getX() && s.getX() <= (n.getX() + n.getWidth()))) {
+                        if (n.receberDano(s.getDano())) {
+                            millisDeath = clock.millis();
+                            millisDeath2 = millisDeath;
+                        }
+                        n.setImg("/images/nave_player.gif", 0.18);
+                        shootsInimigo.remove(i);
+                        i--;
+                    }
+            }
+
+            // Animação das explosões
+            for (int i = 0; i < explosões.size(); i++) {
+                Explosion e = explosões.get(i);
+
+                if((e.getMillis() - e.getMillis2()) < 500)
+                    e.draw(g);
+                else {
+                    explosões.remove(i);
+                    i--;
+                }
+            }
+
+            // Animação do power ups
+            for (int i = 0; i < powerUps.size(); i++) {
+                PowerUp up = powerUps.get(i);
+                up.draw(g);
+
+                if (up.move()) {
+                    if (!n.isDead()) {
+                        if (n.pegarPowerUp(up.getX(), up.getY(), up.getWidth(), up.getHeight(), up.getType())) {
+                            powerUps.remove(i);
+                            i--;
+                        }
+                    }
+                } else {
+                    if(up.getType())
+                        shootPlusSpawn = false;
+
+                    powerUps.remove(i);
                     i--;
                 }
             }
@@ -255,26 +447,298 @@ public class Run extends javax.swing.JFrame implements Runnable{
             // Unidade de tempo da animação
             try {
                 Thread.sleep(5);
-            } catch  (InterruptedException ex) {}
+            } catch (InterruptedException ex) {
+            }
+        }
+
+        //Preparativos da boss fight
+        long millisAnimation = clock.millis(), millisAnimation2 = millisAnimation;
+
+        // Limpando o arrayList dos inimigos
+        for (int i = 0; i < inimigos.size(); i++) {
+            Nave inimigo = inimigos.get(i);
+            inimigos.remove(i);
+            i--;
+            inimigoDelete(inimigo, explosões);
+        }
+
+        // Limpando o arrayList dos tiros inimigos
+        for (int i = 0; i < shootsInimigo.size(); i++) {
+            Shoot s = shootsInimigo.get(i);
+            shootsInimigo.remove(i);
+            i--;
+        }
+
+        // Limpando o arrayList dos tiros player
+        for (int i = 0; i < shootsPlayer.size(); i++) {
+            Shoot s = shootsPlayer.get(i);
+            shootsPlayer.remove(i);
+            i--;
+        }
+
+        // Boss fight
+        while(true) {
+            // Atualiza g
+            g = getBufferStrategy().getDrawGraphics();
+
+            // Limpa tela
+            g.clearRect(0, 0, getWidth(), getHeight());
+
+            // Animação da tela de fundo
+            g.drawImage(img.getImage(), 0, 0, width + 50, height, null);
+
+            // Se o jogo estiver pausado, não executa a lógica do jogo
+            if (isPaused)
+                continue;
+
+            // Animação do player
+            n.draw(g);
+
+            // Animação do boss
+            b.draw(g);
+
+            // Animação das explosões
+            for (int i = 0; i < explosões.size(); i++) {
+                Explosion e = explosões.get(i);
+
+                if((e.getMillis() - e.getMillis2()) < 500)
+                    e.draw(g);
+                else {
+                    explosões.remove(i);
+                    i--;
+                }
+            }
+
+            // Animação inicial
+            if(animationBoss) {
+                millisAnimation = clock.millis();
+                if ((millisAnimation - millisAnimation2) >= 2000)
+                    if (n.animation2()) {
+                        if(b.getY() <= 170)
+                            b.animation();
+                        else {
+                            if(animationCap) {
+                                for (int i = 0; i < 4; i++)
+                                    capsulas.add(new Capsula(b.getX() + (b.getWidth() / 2) - 27, b.getY() + (b.getHeight() / 2) - 50, 2, 2, "images/capsula.png", height, width, 0.5, (byte) i));
+                                animationCap = false;
+                            }
+                            for (int i = 0; i < capsulas.size(); i++) {
+                                Capsula c = capsulas.get(i);
+                                c.draw(g);
+
+                                c.setmillisShoot();
+
+                                if(c.capsulaAnimation())
+                                    animationBoss = false;
+                            }
+                        }
+                    }
+            } else if(b.getVida() > 0) {
+                // Boss fight
+
+                // Morte do player
+                if (n.isDead()) {
+                    millisDeath = clock.millis();
+                    if ((millisDeath - millisDeath2) < 400)
+                        g.drawImage(imgExplosion.getImage(), n.getX(), n.getY(), (int) (imgExplosion.getIconWidth() * 0.5), (int) (imgExplosion.getIconHeight() * 0.5), null);
+                    else if ((millisDeath - millisDeath2) > 2500) {
+                        loopSound.stop();
+                        new TelaGameOver();
+                        dispose(); // Fecha a tela de jogo atual
+                        break;
+                    }
+                }
+
+                // Animação das capsulas
+                for (int i = 0; i < capsulas.size(); i++) {
+                    Capsula c = capsulas.get(i);
+                    c.draw(g);
+
+                    c.capsula();
+
+                    if(c.atirar())
+                        shootsInimigo.add(new Shoot(c.getX(), c.getY(), 10, 7, "/images/tiroCap.png", height, width, 0.5));
+                }
+
+                // Tiros das capsulas
+                for (int i = 0; i < shootsInimigo.size(); i++) {
+                    Shoot s = shootsInimigo.get(i);
+                    s.draw(g);
+
+                    // Movo eles e, caso passem da tela, excluo do array
+                    if (s.move2(n.getX(), n.getY())) {
+                        shootsInimigo.remove(i);
+                        i--; // Ajusta o índice após a remoção
+                    }
+
+                    // Caso atinja o player, subtrai da vida do player o dano do tiro e exclui o tiro do array
+                    if(!n.isDead())
+                        if ((s.getY() <= (n.getY() + n.getHeight()) && s.getY() >= n.getY()) && (s.getX() >= n.getX() && s.getX() <= (n.getX() + n.getWidth()))) {
+                            if (n.receberDano(s.getDano())) {
+                                millisDeath = clock.millis();
+                                millisDeath2 = millisDeath;
+                            }
+                            n.setImg("/images/nave_player.gif", 0.18);
+                            shootsInimigo.remove(i);
+                            i--;
+                        }
+                }
+
+                // Tiros do Player
+                for (int i = 0; i < shootsPlayer.size(); i++) {
+                    // Varro o array de tiros do player para desenhar eles
+                    Shoot s = shootsPlayer.get(i);
+                    s.draw(g);
+                    // Movo eles para cima e, caso passem da tela, excluo do array
+                    if (s.move()) {
+                        shootsPlayer.remove(i);
+                        i--;
+                        continue;
+                    }
+
+                    // Caso atinja, substraio da vida do inimigo o dano do tiro e excluo o tiro do array
+                    if ((s.getY() <= (b.getY() + b.getHeight()) && s.getY() >= b.getY()) && (s.getX() >= b.getX() && s.getX() <= (b.getX() + b.getWidth()))) {
+                        b.receberDano(s.getDano());
+                        shootsPlayer.remove(i);
+                        i--;
+                    }
+                }
+
+                // Controles
+                if (right)
+                    n.moveX(1);
+                if (left)
+                    n.moveX(-1);
+                if (down)
+                    n.moveY(1);
+                if (up)
+                    n.moveY(-1);
+
+                // Tiro do player
+                if (n.atirar(0, shoot)) {
+                    shootsPlayer.add(new Shoot(n.getX(), n.getY(), 10, 10, "/images/tiro.gif", height, width, 0.4, (byte) 0, n.getWidth()));
+                    shootsPlayer.add(new Shoot(n.getX(), n.getY(), 10, 10, "/images/tiro.gif", height, width, 0.4, (byte) 1, n.getWidth()));
+                    if (n.getShootPlus()) {
+                        shootsPlayer.add(new Shoot(n.getX(), n.getY(), 5, 10, "/images/tiro.gif", height, width, 0.4, (byte) 2, n.getWidth()));
+                        shootsPlayer.add(new Shoot(n.getX(), n.getY(), 5, 10, "/images/tiro.gif", height, width, 0.4, (byte) 3, n.getWidth()));
+                    }
+                    n.setmillisShoot();
+                }
+
+                millisAnimation = clock.millis();
+                millisAnimation2 = millisAnimation;
+                millisDeath = clock.millis();
+                millisDeath2 = millisDeath;
+            } else {
+                // Destruição das capsulas
+                for (int i = 0; i < capsulas.size(); i++) {
+                    Capsula c = capsulas.get(i);
+                    capsulas.remove(i);
+                    i--;
+                    explosões.add(new Explosion(c.getX(), c.getY(), "/images/explosion2.gif", 0.32));
+                }
+
+                millisAnimation = clock.millis();
+                if ((millisAnimation - millisAnimation2) >= 2000) {
+                    b.setDead(true);
+                    // Morte do boss
+                    millisDeath = clock.millis();
+                    if ((millisDeath - millisDeath2) < 1000)
+                        g.drawImage(imgExplosion.getImage(), b.getX(), b.getY(), (int) (imgExplosion.getIconWidth() * 1.5), (int) (imgExplosion.getIconHeight() * 1.5), null);
+                    else if ((millisDeath - millisDeath2) > 2500) {
+                        if(!exit) {
+                            if (n.animation2())
+                                exit = true;
+                        }
+                        else {
+                            n.animationFinal();
+                            if ((n.getY() + n.getWidth()) < 0) {
+                                dispose();
+                                System.exit(0);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Exibe a tela
+            getBufferStrategy().show();
+
+            // Unidade de tempo da animação
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException ex) {
+            }
         }
     }
-    public void horda1(ArrayList<Inimigo> inimigos, Graphics g){
-        if(aux == false) {
-            millisInimigo = clock.millis();
-            if ((millisInimigo - millisInimigo2) > 1000) {
-                inimigos.add(new Inimigo(4, 1, 10, 0.15, 200, width, height, "/images/nave_small.png"));
-                millisInimigo2 = millisInimigo;
+
+    public void inimigos(ArrayList<Nave> inimigos) {
+        // Nave pequena spawna a cada 1s e com uma horda na tela a cada 2s
+        millisSmall = clock.millis();
+        if ((millisSmall - millisSmall2) > (inimigoSpawn - subInimigoSpawn) && inimigos.size() < 4) {
+            inimigos.add(new Small(7, 5, 10, 0.14, width, height, "/images/nave_small.png"));
+            millisSmall2 = millisSmall;
+        }
+
+        // Nave média spawna a cada 10s depois de 15 pontos
+        if (mediumDeath) {
+            millisMedium = clock.millis();
+            if ((millisMedium - millisMedium2) > 10000 && score >= 15) {
+                inimigos.add(new Medium(5, 5, 50, 0.35, width, height, "/images/nave_medium.gif"));
+                millisMedium2 = millisMedium;
+                mediumDeath = false;
+            }
+        }
+
+        // Nave grande spawna a cada 10s depois de 35 pontos
+        if(bigDeath) {
+            inimigoSpawn = 1000;
+            millisBig = clock.millis();
+            if ((millisBig - millisBig2) > 15000 && score >= 35) {
+                inimigos.add(new Big(2, 1, 100, 0.95, width, height, "/images/nave_big.gif"));
+                millisBig2 = millisBig;
+                bigDeath = false;
+            }
+        } else
+            inimigoSpawn = 2000;
+
+        // Horda inimiga spawna a cada 15s
+        millisHorda = clock.millis();
+        if ((millisHorda - millisHorda2) > 15000 && score >= 25) {
+            if(!horde) {
+                Random r = new Random();
+                randHorde = (byte) r.nextInt(4);
+            }
+            horde = true;
+            inimigoSpawn = 2000;
+            millisHorda3 = clock.millis();
+            // Cada nave da horda spawna com 700ms de diferença
+            if((millisHorda3 - millisHorda4) > 700) {
+                inimigos.add(new Verme(10, 0.17, width, height, randHorde, "/images/verme.gif"));
                 i++;
+                millisHorda4 = millisHorda3;
+            }
+            if(i > 4) {
+                horde = false;
+                i = 0;
+                inimigoSpawn /= 2;
+                millisHorda2 = millisHorda;
             }
         }
-        for (int i = 0; i < inimigos.size(); i++) {
-            Inimigo n2 = inimigos.get(i);
-            n2.draw(g);
-            if(n2.moviment3()) {
-                System.out.println("Inimigo removido");
-                inimigos.remove(i);
-                i--;
-            }
-        }
+    }
+
+    public void inimigoDelete(Nave inimigo, ArrayList<Explosion> explosões) {
+        if (inimigo instanceof Medium) {
+            explosões.add(new Explosion(inimigo.getX(), inimigo.getY(), "/images/explosionMedium.gif", 0.75));
+            mediumDeath = true;
+            millisMedium = clock.millis();
+            millisMedium2 = millisMedium;
+        } else if(inimigo instanceof Big) {
+            explosões.add(new Explosion(inimigo.getX() - 20, inimigo.getY(), "/images/explosionBig.gif", 1.0));
+            bigDeath = true;
+            millisBig = clock.millis();
+            millisBig2 = millisMedium;
+        } else
+            explosões.add(new Explosion(inimigo.getX(), inimigo.getY(), "/images/explosion2.gif", 0.38));
     }
 }

@@ -6,9 +6,8 @@ public class Shoot {
     private ImageIcon img;
     private boolean aux = false;
 
-    public Shoot(int x, int y, int dano, int speed, String url, int screenHeight, int screenWidth, double scale) {
-        this.x = x;
-        this.y = y;
+    // Construtor tiro player
+    public Shoot(int x, int y, int dano, int speed, String url, int screenHeight, int screenWidth, double scale, byte aux, int naveWidth) {
         this.dano = dano;
         this.speed = speed;
         this.img = new ImageIcon(this.getClass().getResource(url));
@@ -16,6 +15,40 @@ public class Shoot {
         this.height = (int) (img.getIconHeight() * scale);
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
+
+        // Diferença da distancia dos tiros da nave player
+        switch (aux) {
+            case 0:
+                this.x = x + 7;
+                this.y = y;
+                break;
+            case 1:
+                this.x = (x + naveWidth) - this.width - 10;
+                this.y = y;
+                break;
+            case 2:
+                this.x = (x + naveWidth) - 5;
+                this.y = y + 8;
+                break;
+            case 3:
+                this.x = x - 5;
+                this.y = y + 8;
+                break;
+        }
+    }
+
+    // Construtor tiro inimigo
+    public Shoot(int x, int y, int dano, int speed, String url, int screenHeight, int screenWidth, double scale) {
+        this.dano = dano;
+        this.speed = speed;
+        this.img = new ImageIcon(this.getClass().getResource(url));
+        this.width = (int) (img.getIconWidth() * scale);
+        this.height = (int) (img.getIconHeight() * scale);
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+
+        this.x = x;
+        this.y = y;
     }
 
     public void draw(Graphics g) {

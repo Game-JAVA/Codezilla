@@ -1,22 +1,50 @@
 import java.awt.*;
+import java.time.Clock;
 
 public abstract class Nave {
-    private int x, y, speedX, speedY, vida;
+    private int x, y, speedX, speedY, vida, timeTiro, screenWidth, screenHeight;
+    private Clock clock = Clock.systemDefaultZone();
+    private long millisShoot, millisShoot2;
+    private Sound explosion, hit, shoot;
 
-    public Nave(int x, int y, int speedX, int speedY, int vida) {
+    public Nave(int x, int y, int speedX, int speedY, int vida, int timeTiro, int screenWidth, int screenHeight, String urlExplosion, String urlShoot) {
         this.x = x;
         this.y = y;
         this.speedX = speedX;
         this.speedY = speedY;
         this.vida = vida;
+        this.timeTiro = timeTiro;
+        this.screenHeight = screenHeight;
+        this.screenWidth = screenWidth;
+
+        explosion = new Sound(urlExplosion, false);
+        shoot = new Sound(urlShoot, false);
+        hit = new Sound("sounds/hitMedium.wav", false);
+
+        millisShoot = clock.millis();
+        millisShoot2 = millisShoot;
     }
 
-    public void moveX(int inc) {
-        x+=speedX*inc;
+    public boolean move() { return false; }
+
+    public boolean atirar(int subTimeTiro, boolean enter) {
+        if((getmillisShoot() - getmillisShoot2()) > (getTimeTiro() - subTimeTiro) && enter) {
+            shoot.play();
+            return true;
+        }
+        return false;
     }
 
-    public void moveY(int inc) {
-        y+=speedY*inc;
+    // Recebe o dano
+    public boolean receberDano(int dano) {
+        System.out.println("Acertou");
+        setVida(getVida() - dano);
+        if (getVida() <= 0) {
+            explosion.play();
+            return true;
+        }
+        hit.play();
+        return false;
     }
 
     // Setter
@@ -38,35 +66,43 @@ public abstract class Nave {
 
     public void setVida(int vida) { this.vida = vida; }
 
-    // Getter
-    public int getX() {
-        return x;
-    }
+    public void setTimeTiro(int timeTiro) { this.timeTiro = timeTiro; }
 
-    public int getY() {
-        return y;
-    }
+    // Getters
+    public int getX() { return x; }
 
-    public int getSpeedX() {
-        return speedX;
-    }
+    public int getY() { return y; }
 
-    public int getSpeedY() {
-        return speedY;
-    }
+    public int getSpeedX() { return speedX; }
+
+    public int getSpeedY() { return speedY; }
 
     public int getVida() { return vida; }
 
-    // toString
-    @Override
-    public String toString() {
-        return "Shape{" +
-                ", x=" + x +
-                ", y=" + y +
-                ", speedX=" + speedX +
-                ", speedY=" + speedY +
-                '}';
+    public int getTimeTiro() { return timeTiro; }
+
+    public abstract int getWidth();
+
+    public abstract int getHeight();
+
+    public long getmillisShoot() {
+        millisShoot = clock.millis();
+        return millisShoot;
     }
+
+    public long getmillisShoot2() {
+        return millisShoot2;
+    }
+
+    // Reset millis
+    public void setmillisShoot() {
+        millisShoot = clock.millis();
+        millisShoot2 = millisShoot;
+    }
+
+    public int getScreenHeight() { return screenHeight; }
+
+    public int getScreenWidth() { return screenWidth; }
 
     public abstract void draw(Graphics g);
 }
