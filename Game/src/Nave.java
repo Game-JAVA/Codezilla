@@ -2,21 +2,18 @@ import java.awt.*;
 import java.time.Clock;
 
 public abstract class Nave {
-    private int x, y, speedX, speedY, vida, timeTiro, screenWidth, screenHeight;
+    private int x, y, speedX, speedY, vida, timeTiro;
     private Clock clock = Clock.systemDefaultZone();
     private long millisShoot, millisShoot2;
     private Sound explosion, hit, shoot;
 
-    public Nave(int x, int y, int speedX, int speedY, int vida, int timeTiro, int screenWidth, int screenHeight, String urlExplosion, String urlShoot) {
+    public Nave(int x, int y, int speedX, int speedY, int vida, int timeTiro, String urlExplosion, String urlShoot) {
         this.x = x;
         this.y = y;
         this.speedX = speedX;
         this.speedY = speedY;
         this.vida = vida;
         this.timeTiro = timeTiro;
-        this.screenHeight = screenHeight;
-        this.screenWidth = screenWidth;
-
         explosion = new Sound(urlExplosion, false);
         shoot = new Sound(urlShoot, false);
         hit = new Sound("sounds/hitMedium.wav", false);
@@ -99,10 +96,6 @@ public abstract class Nave {
         millisShoot = clock.millis();
         millisShoot2 = millisShoot;
     }
-
-    public int getScreenHeight() { return screenHeight; }
-
-    public int getScreenWidth() { return screenWidth; }
 
     public abstract void draw(Graphics g);
 }

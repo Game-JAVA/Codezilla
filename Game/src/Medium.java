@@ -1,16 +1,17 @@
 import java.awt.Graphics;
+import java.time.Clock;
 import java.util.Random;
 import javax.swing.*;
 
 public class Medium extends Nave {
-    private int width, height;
+    private int width, height, screenWidth, screenHeight;
     private ImageIcon img;
     private static Random r = new Random();
     private boolean aux;
 
     // Construtor das naves
     public Medium(int speedX, int speedY, int vida, double scale, int screenWidth, int screenHeight, String url) {
-        super(0, 0, speedX, speedY, vida, 2200, screenWidth, screenHeight, "/sounds/explosionSmall.wav", "/sounds/tiroMedium.wav");
+        super(0, 0, speedX, speedY, vida, 2000, "/sounds/explosionSmall.wav", "/sounds/tiroMedium.wav");
 
         aux = r.nextBoolean();
         if(aux)
@@ -19,6 +20,8 @@ public class Medium extends Nave {
         this.img = new ImageIcon(this.getClass().getResource(url));
         this.width = (int) (img.getIconWidth() * scale);
         this.height = (int) (img.getIconHeight() * scale);
+        this.screenHeight = screenHeight;
+        this.screenWidth = screenWidth;
     }
 
     // Métodos
@@ -32,12 +35,12 @@ public class Medium extends Nave {
     @Override
     public boolean move() {
         // Calcula a diferença entre o destino e o tiro (cateto)
-        int cateto1 = (getScreenWidth()/2) - getX();
+        int cateto1 = (screenWidth/2) - getX();
         int cateto2 = 300 - getY();
 
         // Verifica se o objeto já está próximo o suficiente do destino
         if (Math.abs(cateto1) <= getSpeedX() && Math.abs(cateto2) <= getX()) {
-            setX(getScreenWidth()/2);
+            setX(screenWidth/2);
             setY(300);
         } else {
             // Hipotenusa

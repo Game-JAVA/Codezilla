@@ -4,7 +4,7 @@ import java.util.Random;
 import javax.swing.*;
 
 public class Small extends Nave {
-    private int width, height, rand500;
+    private int width, height, screenWidth, screenHeight, rand500;
     private long millisHorda, millisHorda2;
     private ImageIcon img;
     private Clock clock = Clock.systemDefaultZone();
@@ -13,7 +13,7 @@ public class Small extends Nave {
 
     // Construtor das naves
     public Small(int speedX, int speedY, int vida, double scale, int screenWidth, int screenHeight, String url) {
-        super(0, r.nextInt((screenHeight / 3) * 2), speedX, speedY, vida, 2300, screenWidth, screenHeight, "/sounds/explosionSmall.wav", "/sounds/tiroSmall.wav");
+        super(0, r.nextInt((screenHeight / 3) * 2), speedX, speedY, vida, 2200, "/sounds/explosionSmall.wav", "/sounds/tiroSmall.wav");
 
         aux = r.nextBoolean();
         if(aux)
@@ -24,6 +24,8 @@ public class Small extends Nave {
         this.img = new ImageIcon(this.getClass().getResource(url));
         this.width = (int) (img.getIconWidth() * scale);
         this.height = (int) (img.getIconHeight() * scale);
+        this.screenHeight = screenHeight;
+        this.screenWidth = screenWidth;
 
         millisHorda = clock.millis();
         millisHorda2 = millisHorda;
@@ -39,7 +41,7 @@ public class Small extends Nave {
     // Movimento reto (nave pequena)
     @Override
     public boolean move() {
-        if(getX() < 200 || getX() > (getScreenWidth() - 200) || (getX() % (500 + rand500) != 0) || !aux2) {
+        if(getX() < 200 || getX() > (screenWidth - 200) || (getX() % (500 + rand500) != 0) || !aux2) {
             if(!aux) {
                 setX(getX() + getSpeedX());
                 // setY(getY() + randY);
@@ -58,7 +60,7 @@ public class Small extends Nave {
                 aux2 = false;
         }
 
-        if (getX() >= getScreenWidth() || (getX() + width) <= 0)
+        if (getX() >= screenWidth || (getX() + width) <= 0)
             return true;
         return false;
     }

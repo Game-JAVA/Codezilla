@@ -3,18 +3,20 @@ import java.util.Random;
 import javax.swing.*;
 
 public class Big extends Nave {
-    private int width, height;
+    private int width, height, screenWidth, screenHeight;
     private ImageIcon img;
     private static Random r = new Random();
     private boolean aux;
 
     // Construtor das naves
     public Big(int speedX, int speedY, int vida, double scale, int screenWidth, int screenHeight, String url) {
-        super(200, screenHeight, speedX, speedY, vida, 2800, screenWidth, screenHeight, "/sounds/explosionSmall.wav", "/sounds/tiroSmall.wav");
+        super(200, screenHeight, speedX, speedY, vida, 2800, "/sounds/explosionSmall.wav", "/sounds/tiroSmall.wav");
 
         this.img = new ImageIcon(this.getClass().getResource(url));
         this.width = (int) (img.getIconWidth() * scale);
         this.height = (int) (img.getIconHeight() * scale);
+        this.screenHeight = screenHeight;
+        this.screenWidth = screenWidth;
 
         aux = r.nextBoolean();
         if(aux)

@@ -3,14 +3,14 @@ import javax.swing.*;
 import java.util.function.BiPredicate;
 
 public class Verme extends Nave {
-    private int width, height, centerY, centerX, raio, sinalAngle, sinalPI;
+    private int width, height, centerY, centerX, raio, screenWidth, screenHeight, sinalAngle, sinalPI;
     private double angle;
     private ImageIcon img;
     BiPredicate<Double, Double> comparisionRadian;
 
     // Construtor da nave de horda
     public Verme(int vida, double scale, int screenWidth, int screenHeight, int rand, String url) {
-        super(screenWidth, 0, 0, 0, vida, 3000, screenWidth, screenHeight, "/sounds/explosionSmall.wav", "/sounds/tiroVerme.wav");
+        super(screenWidth, 0, 0, 0, vida, 2800, "/sounds/explosionSmall.wav", "/sounds/tiroVerme.wav");
 
         // Centro do movimento
         centerX = screenWidth / 2;
@@ -54,6 +54,8 @@ public class Verme extends Nave {
         img = new ImageIcon(this.getClass().getResource(url));
         width = (int) (img.getIconWidth() * scale);
         height = (int) (img.getIconHeight() * scale);
+        this.screenHeight = screenHeight;
+        this.screenWidth = screenWidth;
     }
 
     // Métodos
@@ -67,7 +69,7 @@ public class Verme extends Nave {
     @Override
     public boolean move() {
         if (comparisionRadian.test(angle, Math.PI * sinalPI)) {
-            angle += 0.01 * sinalAngle; // Incrementa o ângulo
+            angle += 0.006 * sinalAngle; // Incrementa o ângulo
 
             int newX = (int) (centerX + raio * Math.cos(angle));
             int newY = (int) (centerY + raio * Math.sin(angle));

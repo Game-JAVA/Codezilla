@@ -6,7 +6,6 @@ public class Shoot {
     private ImageIcon img;
     private boolean aux = false;
 
-    // Construtor tiro player
     public Shoot(int x, int y, int dano, int speed, String url, int screenHeight, int screenWidth, double scale, byte aux, int naveWidth) {
         this.dano = dano;
         this.speed = speed;
@@ -37,7 +36,6 @@ public class Shoot {
         }
     }
 
-    // Construtor tiro inimigo
     public Shoot(int x, int y, int dano, int speed, String url, int screenHeight, int screenWidth, double scale) {
         this.dano = dano;
         this.speed = speed;
