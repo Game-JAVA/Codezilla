@@ -41,11 +41,11 @@
 - Os principais jogos nos quais tentamos nos basear foram os seguintes:
  
  **Star Soldier (1989)**
-![image](https://github.com/user-attachments/assets/c2cb7252-d856-44ae-a099-127b765da62e)
+- ![image](https://github.com/user-attachments/assets/c2cb7252-d856-44ae-a099-127b765da62e)
 - Star Soldier é um jogo de tiro desenvolvido e publicado pela Hudson Soft para o Nintendo Entertainment System e o MSX. O jogador pilota a nave estelar "Caesar", viajando através de estações espaciais - ocupadas por supercomputadores poderosos conhecidos como "Starbrains" que ameaçam o império galáctico. Star Soldier se assemelha muito ao jogo de arcade anterior Star Force.
 
 **1942 (1984)**
-![image](https://github.com/user-attachments/assets/b0cf9c31-9c6a-4ec3-ac30-ab09bc45464e)
+- ![image](https://github.com/user-attachments/assets/b0cf9c31-9c6a-4ec3-ac30-ab09bc45464e)
 
 - 1942 é um jogo de tiro de rolagem vertical shoot 'em up feito pela Capcom que foi lançado para arcade em 1984. [1]Foi o primeiro jogo da série 19XX. Foi seguido pelo 1943: The Battle of Midway.
 
