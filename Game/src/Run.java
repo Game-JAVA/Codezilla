@@ -164,7 +164,6 @@ public class Run extends javax.swing.JFrame implements Runnable{
         ImageIcon img = new ImageIcon(this.getClass().getResource("/images/background.gif"));
         // Objetos das imagens do score
         ImageIcon imgDec, imgUni, imgScore;
-        //ImageIcon boss = new ImageIcon(this.getClass().getResource("/images/mothership.png"));
 
         // Objeto da imagem de explosão do player
         ImageIcon imgExplosion = new ImageIcon(this.getClass().getResource("/images/explosion2.gif"));
@@ -552,14 +551,35 @@ public class Run extends javax.swing.JFrame implements Runnable{
                     Capsula c = capsulas.get(i);
                     c.draw(g);
 
+                    // Movimentação das capsulas
                     c.move(b.getX() + (b.getWidth() / 2) - 27);
 
                     if(c.atirar())
                         shootsInimigo.add(new Shoot(c.getX(), c.getY(), 10, 6, "/images/tiroCap.png", height, width, 0.5));
+
+                    // Colisão com o player
+                    if(!n.isDead())
+                        if ((c.getY() <= (n.getY() + n.getHeight()) && c.getY() >= n.getY()) && c.getX() >= n.getX() && c.getX() <= (n.getX() + n.getWidth())) {
+                            if (n.receberDano(10)) {
+                                millisDeath = clock.millis();
+                                millisDeath2 = millisDeath;
+                            } else
+                                n.setImg("/images/nave_player.gif", 0.18);
+                        }
                 }
 
                 // Animação do boss
                 b.move();
+                // Colisão com o player
+                if(!n.isDead())
+                    if ((b.getY() <= (n.getY() + n.getHeight()) && b.getY() >= n.getY()) && b.getX() >= n.getX() && b.getX() <= (n.getX() + n.getWidth())) {
+                        if (n.receberDano(10)) {
+                            millisDeath = clock.millis();
+                            millisDeath2 = millisDeath;
+                        } else
+                            n.setImg("/images/nave_player.gif", 0.18);
+                    }
+
                 // Tiros do boss
                 if(b.atirar(0, true)) {
                     shootsInimigo.add(new Shoot(b.getX() + (b.getWidth() / 2) - 27, b.getY() + (b.getHeight() / 2) - 50, 20, 5, "/images/tiroBoss.gif", height, width, 0.5));
